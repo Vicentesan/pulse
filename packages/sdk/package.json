@@ -1,7 +1,7 @@
 {
   "name": "@pulse/sdk",
-  "version": "0.0.1",
-  "description": "A unified TypeScript SDK for financial data providers (including crypto)",
+  "version": "0.0.0",
+  "description": "A unified TypeScript SDK for financial data providers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -23,7 +23,8 @@
   "keywords": [
     "financial",
     "sdk",
-    "banking"
+    "banking",
+    "adapter"
   ],
   "author": "Vicente Sanchez",
   "license": "MIT"

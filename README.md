@@ -1,71 +1,96 @@
 # pulse
-a unified typescript sdk for financial data providers.
+A unified typescript sdk for financial data providers.
 
+## Overview
+Pulse simplifies integration with multiple financial data providers by offering a single, consistent interface. Instead of managing separate setups and learning different APIs for various providers, Pulse lets you configure once and access all supported services through a unified API.
 
-## overview
-pulse simplifies integration with multiple financial data providers by offering a single, consistent interface. instead of managing separate setups and learning different apis for pluggy, teller, and other providers, pulse lets you configure once and access all supported services through a unified api.
+## Why Pulse?
+- Single Integration: Connect to multiple financial data providers through one SDK
+- Consistent API: Uniform methods and data structures across all providers
+- Simplified Development: Reduce boilerplate and provider-specific code
+- Fullstack Solution: Designed to work seamlessly in both frontend and backend environments
+- Adaptable: Modular adapter system for easy extension to new providers
 
-## why pulse?
-- single integration: connect to multiple financial data providers through one sdk
-- consistent api: uniform methods and data structures across all providers
-- simplified development: reduce boilerplate and provider-specific code
-- fullstack solution: designed to work seamlessly in both frontend and backend environments
-- adaptable: modular adapter system for easy extension to new providers
-
-## installation
-`npm install @yourusername/pulse`
+## Installation
+```bash
+npm install @pulse/sdk
 # or
-`yarn add @yourusername/pulse`
+yarn add @pulse/sdk
 # or
-`bun add @yourusername/pulse`
+bun add @pulse/sdk
+```
 
-## peer dependencies
-pulse uses an adapter system that requires the underlying provider sdks as peer dependencies. install only the ones you plan to use:
-
-`npm install pluggy-sdk teller-sdk` ... etc
-
-## basic usage
+## Basic Usage
 ```typescript
-import { Pulse } from '@yourusername/pulse'
-import { PluggyAdapter } from '@yourusername/pulse-pluggy'
-import { TellerAdapter } from '@yourusername/pulse-teller'
+import { Pulse } from '@pulse/sdk'
+import { MyCustomAdapter } from './my-adapter'
 
-// initialize pulse with your providers
+// Initialize Pulse with your adapters
 const pulse = new Pulse({
   adapters: [
-    new PluggyAdapter({
-      clientId: 'your-pluggy-client-id',
-      clientSecret: 'your-pluggy-client-secret'
-    }),
-    new TellerAdapter({
-      apiKey: 'your-teller-api-key'
+    new MyCustomAdapter({
+      apiKey: 'your-api-key'
     })
   ]
 })
 
-// use a unified api for all providers
+// Connect to the provider
+await pulse.connect('user-123')
+
+// Get user accounts
 const accounts = await pulse.getAccounts({
   userId: 'user-123'
 })
 
-// or specify a provider if needed
-const pluggyAccounts = await pulse.getAccounts({
+// Get account transactions
+const transactions = await pulse.getTransactions({
   userId: 'user-123',
-  provider: 'pluggy'
+  accountId: 'account-456'
 })
+
+// Refresh user accounts
+await pulse.refreshAccounts({
+  userId: 'user-123'
+})
+
+// Disconnect when done
+await pulse.disconnect('user-123')
 ```
 
-## supported providers
-pulse is in early development. planned support includes:
-- pluggy
-- teller
-- ...
+## Creating Custom Adapters
+You can create custom adapters by extending the `BasePulseAdapter` class:
 
-## development status
-⚠️ early development - this library is currently in the initial development phase and not ready for production use.
+```typescript
+import { BasePulseAdapter, PulseAdapterConfig, Account, Transaction } from '@pulse/sdk'
 
-## contributing
-contributions are welcome! please feel free to submit a pull request.
+export class MyCustomAdapter extends BasePulseAdapter {
+  readonly provider = 'my-provider'
 
-## license
-mit
+  async connect(userId: string): Promise<void> {
+    // Implement connection logic
+  }
+
+  async disconnect(userId: string): Promise<void> {
+    // Implement disconnection logic
+  }
+
+  async getAccounts(userId: string): Promise<Account[]> {
+    // Implement account fetching logic
+    return []
+  }
+
+  async getTransactions(userId: string, accountId: string): Promise<Transaction[]> {
+    // Implement transaction fetching logic
+    return []
+  }
+}
+```
+
+## Development Status
+⚠️ Early Development - This library is currently in the initial development phase and not ready for production use.
+
+## Contributing
+Contributions are welcome! Please feel free to submit a pull request.
+
+## License
+MIT

@@ -1,3 +1,17 @@
+export enum AccountType {
+  CHECKING = 'CHECKING',
+  SAVINGS = 'SAVINGS',
+  CREDIT = 'CREDIT',
+  INVESTMENT = 'INVESTMENT',
+  LOAN = 'LOAN',
+  OTHER = 'OTHER',
+}
+
+export enum TransactionType {
+  CREDIT = 'CREDIT',
+  DEBIT = 'DEBIT',
+}
+
 export interface Account {
   id: string
   name: string
@@ -5,15 +19,6 @@ export interface Account {
   balance: number
   currency: string
   lastUpdated: string
-}
-
-export enum AccountType {
-  CHECKING = 'CHECKING',
-  SAVINGS = 'SAVINGS',
-  CREDIT = 'CREDIT',
-  INVESTMENT = 'INVESTMENT',
-  LOAN = 'LOAN',
-  OTHER = 'OTHER'
 }
 
 export interface Transaction {
@@ -26,8 +31,3 @@ export interface Transaction {
   type: TransactionType
   date: string
 }
-
-export enum TransactionType {
-  CREDIT = 'CREDIT',
-  DEBIT = 'DEBIT'
-} 
