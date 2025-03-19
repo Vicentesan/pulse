@@ -18,9 +18,8 @@ export class Pulse {
   private getAdapter(provider?: string): PulseAdapter {
     if (provider) {
       const adapter = this.adapters.get(provider)
-      if (!adapter) {
-        throw new Error(`Provider ${provider} not found`)
-      }
+      if (!adapter) throw new Error(`Provider ${provider} not found`)
+
       return adapter
     }
     return Array.from(this.adapters.values())[0]
@@ -58,15 +57,16 @@ export class Pulse {
     userId: string
     provider?: string
   }): Promise<Account[]> {
-    if (params.provider) {
+    if (params.provider)
       return this.getAdapter(params.provider).getAccounts(params.userId)
-    }
 
     // Get accounts from all adapters
     const accountPromises = Array.from(this.adapters.values()).map((adapter) =>
       adapter.getAccounts(params.userId),
     )
+
     const accounts = await Promise.all(accountPromises)
+
     return accounts.flat()
   }
 
@@ -75,18 +75,19 @@ export class Pulse {
     accountId: string
     provider?: string
   }): Promise<Transaction[]> {
-    if (params.provider) {
+    if (params.provider)
       return this.getAdapter(params.provider).getTransactions(
         params.userId,
         params.accountId,
       )
-    }
 
     // Get transactions from all adapters
     const transactionPromises = Array.from(this.adapters.values()).map(
       (adapter) => adapter.getTransactions(params.userId, params.accountId),
     )
+
     const transactions = await Promise.all(transactionPromises)
+
     return transactions.flat()
   }
 
