@@ -23,12 +23,12 @@ export function startServer() {
     openapi: {
       openapi: '3.0.0',
       info: {
-        title: 'Plotwist',
+        title: 'Pulse',
         version: '0.1.0',
       },
       servers: [
         {
-          url: env.BASE_URL,
+          url: env.app.BASE_URL,
           description: 'Development server',
         },
       ],
@@ -57,11 +57,11 @@ export function startServer() {
 
   app
     .listen({
-      port: env.PORT,
+      port: env.app.PORT,
       host: '0.0.0.0',
     })
     .then(() => {
-      logger.info(`HTTP server running at ${env.BASE_URL}`)
+      logger.info(`HTTP server running at ${env.app.BASE_URL}`)
     })
 }
 
