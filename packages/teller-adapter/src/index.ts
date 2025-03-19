@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   type Account,
   AccountType,
@@ -54,7 +55,7 @@ export class TellerAdapter extends BasePulseAdapter {
     }
   }
 
-  async disconnect(): Promise<void> {
+  async disconnect(userId: string): Promise<void> {
     try {
       if (!this.#accessToken) throw new Error('Not connected to Teller')
 
@@ -82,7 +83,7 @@ export class TellerAdapter extends BasePulseAdapter {
     }
   }
 
-  async getAccounts(): Promise<Account[]> {
+  async getAccounts(_userId: string): Promise<Account[]> {
     try {
       if (!this.#accessToken) throw new Error('Not connected to Teller')
 
@@ -116,7 +117,7 @@ export class TellerAdapter extends BasePulseAdapter {
   }
 
   async getTransactions(
-    _userId: string,
+    userId: string,
     accountId: string,
   ): Promise<Transaction[]> {
     try {
