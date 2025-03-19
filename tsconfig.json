@@ -2,6 +2,6 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["packages/**/*"],
+  "include": ["packages/**/*", "src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,11 +1,11 @@
 {
-  "name": "@pulse/sdk",
+  "name": "@pulse/teller-adapter",
   "version": "0.0.0",
-  "description": "A unified TypeScript SDK for financial data providers",
+  "description": "A Teller adapter for the Pulse SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist",
+    "build": "tsc",
     "test": "jest",
     "lint": "eslint src --ext .ts"
   },
@@ -13,11 +13,6 @@
     "dist",
     "README.md"
   ],
-  "exports": {
-    ".": "./dist/index.js",
-    "./interfaces": "./dist/interfaces.js",
-    "./types": "./dist/types.js"
-  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
@@ -29,6 +24,10 @@
     "jest": "^29.0.0",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@pulse/sdk": "workspace:*",
+    "zod": "^3.24.2"
   },
   "keywords": [
     "financial",
