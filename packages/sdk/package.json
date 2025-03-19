@@ -1,0 +1,30 @@
+{
+  "name": "@pulse/sdk",
+  "version": "0.0.1",
+  "description": "A unified TypeScript SDK for financial data providers (including crypto)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "financial",
+    "sdk",
+    "banking"
+  ],
+  "author": "Vicente Sanchez",
+  "license": "MIT"
+}

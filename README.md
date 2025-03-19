@@ -1,84 +1,71 @@
-# Turborepo starter
+# pulse
+a unified typescript sdk for financial data providers.
 
-This Turborepo starter is maintained by the Turborepo core team.
 
-## Using this example
+## overview
+pulse simplifies integration with multiple financial data providers by offering a single, consistent interface. instead of managing separate setups and learning different apis for pluggy, teller, and other providers, pulse lets you configure once and access all supported services through a unified api.
 
-Run the following command:
+## why pulse?
+- single integration: connect to multiple financial data providers through one sdk
+- consistent api: uniform methods and data structures across all providers
+- simplified development: reduce boilerplate and provider-specific code
+- fullstack solution: designed to work seamlessly in both frontend and backend environments
+- adaptable: modular adapter system for easy extension to new providers
 
-```sh
-npx create-turbo@latest
+## installation
+`npm install @yourusername/pulse`
+# or
+`yarn add @yourusername/pulse`
+# or
+`bun add @yourusername/pulse`
+
+## peer dependencies
+pulse uses an adapter system that requires the underlying provider sdks as peer dependencies. install only the ones you plan to use:
+
+`npm install pluggy-sdk teller-sdk` ... etc
+
+## basic usage
+```typescript
+import { Pulse } from '@yourusername/pulse'
+import { PluggyAdapter } from '@yourusername/pulse-pluggy'
+import { TellerAdapter } from '@yourusername/pulse-teller'
+
+// initialize pulse with your providers
+const pulse = new Pulse({
+  adapters: [
+    new PluggyAdapter({
+      clientId: 'your-pluggy-client-id',
+      clientSecret: 'your-pluggy-client-secret'
+    }),
+    new TellerAdapter({
+      apiKey: 'your-teller-api-key'
+    })
+  ]
+})
+
+// use a unified api for all providers
+const accounts = await pulse.getAccounts({
+  userId: 'user-123'
+})
+
+// or specify a provider if needed
+const pluggyAccounts = await pulse.getAccounts({
+  userId: 'user-123',
+  provider: 'pluggy'
+})
 ```
 
-## What's inside?
+## supported providers
+pulse is in early development. planned support includes:
+- pluggy
+- teller
+- ...
 
-This Turborepo includes the following packages/apps:
+## development status
+⚠️ early development - this library is currently in the initial development phase and not ready for production use.
 
-### Apps and Packages
+## contributing
+contributions are welcome! please feel free to submit a pull request.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+## license
+mit
