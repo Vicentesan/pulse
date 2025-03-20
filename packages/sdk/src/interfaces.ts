@@ -9,26 +9,12 @@ export interface PulseAdapter {
     userId: string
     provider?: 'teller'
   }): Promise<void>
-  disconnect({
-    userId,
-    provider,
-  }: {
-    userId: string
-    provider?: 'teller'
-  }): Promise<void>
-  getAccounts({
-    userId,
-    provider,
-  }: {
-    userId: string
-    provider?: 'teller'
-  }): Promise<Account[]>
+  disconnect({ provider }: { provider?: 'teller' }): Promise<void>
+  getAccounts({ provider }: { provider?: 'teller' }): Promise<Account[]>
   getTransactions({
-    userId,
     accountId,
     provider,
   }: {
-    userId: string
     accountId: string
     provider?: 'teller'
   }): Promise<Transaction[]>
@@ -62,8 +48,8 @@ export abstract class BasePulseAdapter implements PulseAdapter {
   }
 
   abstract connect({ userId }: { userId: string }): Promise<void>
-  abstract disconnect({ userId }: { userId: string }): Promise<void>
-  abstract getAccounts({ userId }: { userId: string }): Promise<Account[]>
+  abstract disconnect(): Promise<void>
+  abstract getAccounts(): Promise<Account[]>
   abstract getTransactions({
     userId,
     accountId,
@@ -74,7 +60,7 @@ export abstract class BasePulseAdapter implements PulseAdapter {
 
   async refreshAccounts({ userId }: { userId: string }): Promise<void> {
     // Default implementation - can be overridden by specific adapters
-    await this.disconnect({ userId })
+    await this.disconnect()
     await this.connect({ userId })
   }
 }

@@ -39,38 +39,33 @@ export class Pulse {
     )
   }
 
-  async disconnect({
-    userId,
-    provider,
-  }: {
-    userId: string
-    provider?: 'teller'
-  }): Promise<void> {
+  async disconnect({ provider }: { provider?: 'teller' }): Promise<void> {
     if (provider) {
-      await this.getAdapter({ provider }).disconnect({ userId })
+      await this.getAdapter({ provider }).disconnect({ provider })
       return
     }
 
     // Disconnect all adapters
     await Promise.all(
       Array.from(this.adapters.values()).map((adapter) =>
-        adapter.disconnect({ userId }),
+        adapter.disconnect({
+          provider,
+        }),
       ),
     )
   }
 
-  async getAccounts(params: {
-    userId: string
-    provider?: 'teller'
-  }): Promise<Account[]> {
+  async getAccounts(params: { provider?: 'teller' }): Promise<Account[]> {
     if (params.provider)
       return this.getAdapter({ provider: params.provider }).getAccounts({
-        userId: params.userId,
+        provider: params.provider,
       })
 
     // Get accounts from all adapters
     const accountPromises = Array.from(this.adapters.values()).map((adapter) =>
-      adapter.getAccounts({ userId: params.userId }),
+      adapter.getAccounts({
+        provider: params.provider,
+      }),
     )
 
     const accounts = await Promise.all(accountPromises)
@@ -79,13 +74,11 @@ export class Pulse {
   }
 
   async getTransactions(params: {
-    userId: string
     accountId: string
     provider?: 'teller'
   }): Promise<Transaction[]> {
     if (params.provider)
       return this.getAdapter({ provider: params.provider }).getTransactions({
-        userId: params.userId,
         accountId: params.accountId,
       })
 
@@ -93,7 +86,6 @@ export class Pulse {
     const transactionPromises = Array.from(this.adapters.values()).map(
       (adapter) =>
         adapter.getTransactions({
-          userId: params.userId,
           accountId: params.accountId,
         }),
     )

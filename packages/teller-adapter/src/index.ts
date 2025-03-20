@@ -26,7 +26,7 @@ export class TellerAdapter extends BasePulseAdapter {
     }
   }
 
-  async connect(userId: string): Promise<void> {
+  async connect({ userId }: { userId: string }): Promise<void> {
     try {
       // Create a Teller Connect token for the user
       const response = await fetch(`${this.#apiUrl}/connect/token`, {
@@ -55,7 +55,7 @@ export class TellerAdapter extends BasePulseAdapter {
     }
   }
 
-  async disconnect(userId: string): Promise<void> {
+  async disconnect(): Promise<void> {
     try {
       if (!this.#accessToken) throw new Error('Not connected to Teller')
 
@@ -83,7 +83,7 @@ export class TellerAdapter extends BasePulseAdapter {
     }
   }
 
-  async getAccounts(_userId: string): Promise<Account[]> {
+  async getAccounts(): Promise<Account[]> {
     try {
       if (!this.#accessToken) throw new Error('Not connected to Teller')
 
@@ -116,10 +116,11 @@ export class TellerAdapter extends BasePulseAdapter {
     }
   }
 
-  async getTransactions(
-    userId: string,
-    accountId: string,
-  ): Promise<Transaction[]> {
+  async getTransactions({
+    accountId,
+  }: {
+    accountId: string
+  }): Promise<Transaction[]> {
     try {
       if (!this.#accessToken) {
         throw new Error('Not connected to Teller')
@@ -135,9 +136,8 @@ export class TellerAdapter extends BasePulseAdapter {
         },
       )
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Teller API error: ${response.statusText}`)
-      }
 
       const data = await response.json()
       const transactions = TellerTransactionSchema.array().parse(data)
