@@ -23,38 +23,38 @@ yarn add @pulse/sdk
 ## Basic Usage
 ```typescript
 import { Pulse } from '@pulse/sdk'
-import { MyCustomAdapter } from './my-adapter'
+import { PlaidAdapter } from '@pulse/plaid-adap-ter'
 
 // Initialize Pulse with your adapters
 const pulse = new Pulse({
   adapters: [
-    new MyCustomAdapter({
+    new PlaidAdapter({
       apiKey: 'your-api-key'
     })
   ]
 })
 
 // Connect to the provider
-await pulse.connect('user-123')
+await pulse.connect('user-123', 'plaid')
 
 // Get user accounts
 const accounts = await pulse.getAccounts({
   userId: 'user-123'
-})
+}, 'plaid')
 
 // Get account transactions
 const transactions = await pulse.getTransactions({
   userId: 'user-123',
   accountId: 'account-456'
-})
+}, 'plaid')
 
 // Refresh user accounts
 await pulse.refreshAccounts({
   userId: 'user-123'
-})
+}, 'plaid')
 
 // Disconnect when done
-await pulse.disconnect('user-123')
+await pulse.disconnect('user-123', 'plaid')
 ```
 
 ## Creating Custom Adapters
