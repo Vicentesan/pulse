@@ -13,11 +13,11 @@ Pulse simplifies integration with multiple financial data providers by offering 
 
 ## Installation
 ```bash
+bun add @pulse/sdk
+#or
 npm install @pulse/sdk
 # or
 yarn add @pulse/sdk
-# or
-bun add @pulse/sdk
 ```
 
 ## Basic Usage
