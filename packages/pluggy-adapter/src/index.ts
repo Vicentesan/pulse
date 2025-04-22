@@ -27,7 +27,6 @@ export class PluggyAdapter extends BasePulseAdapter<'pluggy'> {
 
   async connect({ userId }: { userId: string }): Promise<void> {
     try {
-      // Create a link token for the user
       const response = await this.client.createConnectToken(userId, {
         clientUserId: userId,
       })
@@ -35,7 +34,6 @@ export class PluggyAdapter extends BasePulseAdapter<'pluggy'> {
       if (!response.accessToken)
         throw new Error('Failed to create access token')
 
-      // Store the link token for later use
       this.accessToken = response.accessToken
     } catch (error) {
       if (error instanceof Error) {
