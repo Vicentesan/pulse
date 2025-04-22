@@ -14,8 +14,8 @@ import {
   TellerTransactionSchema,
 } from './schemas'
 
-export class TellerAdapter extends BasePulseAdapter {
-  readonly provider = 'teller'
+export class TellerAdapter extends BasePulseAdapter<'teller'> {
+  readonly provider = 'teller' as const
   #apiUrl = 'https://api.teller.io'
   #accessToken?: string
 

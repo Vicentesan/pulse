@@ -1,10 +1,10 @@
-import { PulseAdapter, PulseOptions } from './interfaces'
+import { type Provider, PulseAdapter, PulseOptions } from './interfaces'
 import { Account, Transaction } from './types'
 
-export class Pulse {
-  private adapters: Map<string, PulseAdapter>
+export class Pulse<P extends Provider> {
+  private adapters: Map<P, PulseAdapter<P>>
 
-  constructor(options: PulseOptions) {
+  constructor(options: PulseOptions<P>) {
     if (!options.adapters || options.adapters.length === 0) {
       throw new Error('At least one adapter must be provided')
     }
@@ -15,23 +15,21 @@ export class Pulse {
     })
   }
 
-  private getAdapter({ provider }: { provider?: 'teller' }): PulseAdapter {
-    if (provider) {
-      const adapter = this.adapters.get(provider)
-      if (!adapter) throw new Error(`Provider ${provider} not found`)
-
+  private getAdapter(params: { provider?: P }): PulseAdapter<P> {
+    if (params.provider) {
+      const adapter = this.adapters.get(params.provider)
+      if (!adapter) throw new Error(`Provider ${params.provider} not found`)
       return adapter
     }
     return Array.from(this.adapters.values())[0]
   }
 
-  async connect(userId: string, provider?: 'teller'): Promise<void> {
+  async connect(userId: string, provider?: P): Promise<void> {
     if (provider) {
       await this.getAdapter({ provider }).connect({ userId })
       return
     }
 
-    // Connect all adapters
     await Promise.all(
       Array.from(this.adapters.values()).map((adapter) =>
         adapter.connect({ userId }),
@@ -39,50 +37,40 @@ export class Pulse {
     )
   }
 
-  async disconnect({ provider }: { provider?: 'teller' }): Promise<void> {
-    if (provider) {
-      await this.getAdapter({ provider }).disconnect({ provider })
+  async disconnect(params: { provider?: P } = {}): Promise<void> {
+    if (params.provider) {
+      await this.getAdapter({ provider: params.provider }).disconnect({})
       return
     }
 
-    // Disconnect all adapters
     await Promise.all(
       Array.from(this.adapters.values()).map((adapter) =>
-        adapter.disconnect({
-          provider,
-        }),
+        adapter.disconnect({}),
       ),
     )
   }
 
-  async getAccounts(params: { provider?: 'teller' }): Promise<Account[]> {
+  async getAccounts(params: { provider?: P } = {}): Promise<Account[]> {
     if (params.provider)
-      return this.getAdapter({ provider: params.provider }).getAccounts({
-        provider: params.provider,
-      })
+      return this.getAdapter({ provider: params.provider }).getAccounts({})
 
-    // Get accounts from all adapters
     const accountPromises = Array.from(this.adapters.values()).map((adapter) =>
-      adapter.getAccounts({
-        provider: params.provider,
-      }),
+      adapter.getAccounts({}),
     )
 
     const accounts = await Promise.all(accountPromises)
-
     return accounts.flat()
   }
 
   async getTransactions(params: {
     accountId: string
-    provider?: 'teller'
+    provider?: P
   }): Promise<Transaction[]> {
     if (params.provider)
       return this.getAdapter({ provider: params.provider }).getTransactions({
         accountId: params.accountId,
       })
 
-    // Get transactions from all adapters
     const transactionPromises = Array.from(this.adapters.values()).map(
       (adapter) =>
         adapter.getTransactions({
@@ -91,13 +79,12 @@ export class Pulse {
     )
 
     const transactions = await Promise.all(transactionPromises)
-
     return transactions.flat()
   }
 
   async refreshAccounts(params: {
     userId: string
-    provider?: 'teller'
+    provider?: P
   }): Promise<void> {
     if (params.provider) {
       await this.getAdapter({ provider: params.provider }).refreshAccounts({
@@ -106,7 +93,6 @@ export class Pulse {
       return
     }
 
-    // Refresh all adapters
     await Promise.all(
       Array.from(this.adapters.values()).map((adapter) =>
         adapter.refreshAccounts({ userId: params.userId }),

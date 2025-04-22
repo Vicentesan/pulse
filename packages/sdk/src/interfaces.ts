@@ -1,71 +1,53 @@
 import { Account, Transaction } from './types'
 
-export interface PulseAdapter {
-  readonly provider: string
-  connect({
-    userId,
-    provider,
-  }: {
-    userId: string
-    provider?: 'teller'
-  }): Promise<void>
-  disconnect({ provider }: { provider?: 'teller' }): Promise<void>
-  getAccounts({ provider }: { provider?: 'teller' }): Promise<Account[]>
-  getTransactions({
-    accountId,
-    provider,
-  }: {
-    accountId: string
-    provider?: 'teller'
-  }): Promise<Transaction[]>
-  refreshAccounts({
-    userId,
-    provider,
-  }: {
-    userId: string
-    provider?: 'teller'
-  }): Promise<void>
+export type Provider = string
+
+export interface PulseAdapter<P extends Provider = Provider> {
+  readonly provider: P
+  connect(params: { userId: string }): Promise<void>
+  disconnect(params: object): Promise<void>
+  getAccounts(params: object): Promise<Account[]>
+  getTransactions(params: { accountId: string }): Promise<Transaction[]>
+  refreshAccounts(params: { userId: string }): Promise<void>
+}
+
+export interface PulseOptions<P extends Provider> {
+  adapters: PulseAdapter<P>[]
 }
 
 export interface PulseAdapterConfig {
-  clientId?: 'teller'
-  clientSecret?: 'teller'
-  apiKey?: 'teller'
+  clientId?: string
+  clientSecret?: string
+  apiKey?: string
+  baseUrl?: string
   [key: string]: unknown
 }
 
-export interface PulseOptions {
-  adapters: PulseAdapter[]
-}
-
 // Base class for implementing adapters
-export abstract class BasePulseAdapter implements PulseAdapter {
-  abstract readonly provider: string
+export abstract class BasePulseAdapter<P extends Provider = Provider>
+  implements PulseAdapter<P>
+{
+  abstract readonly provider: P
   protected config: PulseAdapterConfig
 
   constructor(config: PulseAdapterConfig) {
     this.config = config
   }
 
-  abstract connect({ userId }: { userId: string }): Promise<void>
-  abstract disconnect(): Promise<void>
-  abstract getAccounts(): Promise<Account[]>
-  abstract getTransactions({
-    userId,
-    accountId,
-  }: {
-    userId: string
+  abstract connect(params: { userId: string }): Promise<void>
+  abstract disconnect(params: object): Promise<void>
+  abstract getAccounts(params: object): Promise<Account[]>
+  abstract getTransactions(params: {
     accountId: string
   }): Promise<Transaction[]>
 
-  async refreshAccounts({ userId }: { userId: string }): Promise<void> {
-    // Default implementation - can be overridden by specific adapters
-    await this.disconnect()
-    await this.connect({ userId })
+  async refreshAccounts(params: { userId: string }): Promise<void> {
+    await this.disconnect({})
+    await this.connect({ userId: params.userId })
   }
 }
 
 export interface PulseConfig {
-  baseUrl?: 'teller'
+  baseUrl?: string
   apiKey: string
 }

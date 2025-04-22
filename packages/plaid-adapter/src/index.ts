@@ -16,13 +16,14 @@ import {
 
 import { PlaidAccountSchema, PlaidTransactionSchema } from './schemas'
 
-export class PlaidAdapter extends BasePulseAdapter {
-  readonly provider = 'plaid'
+export class PlaidAdapter extends BasePulseAdapter<'plaid'> {
+  readonly provider = 'plaid' as const
   private client: PlaidApi
   private accessToken?: string
 
   constructor(config: PulseAdapterConfig) {
     super(config)
+
     if (!config.apiKey) {
       throw new Error('Plaid API key is required')
     }

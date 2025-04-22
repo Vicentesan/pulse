@@ -11,18 +11,6 @@
         "typescript": "5.8.2",
       },
     },
-    "packages/gocardless-adapter": {
-      "name": "@pulse/gocardless-adapter",
-      "version": "0.0.1",
-      "devDependencies": {
-        "@pulse/sdk": "workspace:*",
-        "@types/bun": "^1.2.5",
-        "eslint": "^8.56.0",
-        "tsup": "^8.0.2",
-        "typescript": "^5.3.3",
-        "zod": "^3.22.4",
-      },
-    },
     "packages/plaid-adapter": {
       "name": "@pulse/plaid-adapter",
       "version": "0.0.1",
@@ -264,8 +252,6 @@
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
     "@pkgr/core": ["@pkgr/core@0.1.1", "", {}, "sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA=="],
-
-    "@pulse/gocardless-adapter": ["@pulse/gocardless-adapter@workspace:packages/gocardless-adapter"],
 
     "@pulse/plaid-adapter": ["@pulse/plaid-adapter@workspace:packages/plaid-adapter"],
 
