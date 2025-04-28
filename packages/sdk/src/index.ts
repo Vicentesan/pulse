@@ -252,27 +252,17 @@ export class Pulse<P extends Provider> {
    * @param options - Optional transaction history options
    * @returns A promise that resolves to an array of transactions
    * @throws {PulseError} If fetching transactions fails
-   *
-   * @example
-   * ```typescript
-   * // Get transactions for an account
-   * const transactions = await pulse.getTransactions('account-123', 'plaid')
-   *
-   * // Get transactions with options
-   * const recentTransactions = await pulse.getTransactions('account-123', 'plaid', {
-   *   limit: 10,
-   *   startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-   * })
-   * ```
    */
   async getTransactions(
     accountId: string,
+    userId: string, // Added userId parameter
     provider?: P,
     options?: TransactionHistoryOptions,
   ): Promise<Transaction[]> {
     try {
       const transactionParams: GetTransactionsParams = {
         accountId,
+        userId, // Include userId in params
         options,
       }
 
@@ -296,7 +286,7 @@ export class Pulse<P extends Provider> {
       throw new PulseError(
         `All providers failed to fetch transactions: ${errors.map((e) => e.message).join('; ')}`,
         ErrorCode.TRANSACTION_FETCH_FAILED,
-        { accountId },
+        { accountId, userId },
       )
     } catch (error) {
       if (error instanceof PulseError) {
@@ -308,7 +298,7 @@ export class Pulse<P extends Provider> {
       throw new PulseError(
         `Failed to fetch transactions: ${errorMessage}`,
         ErrorCode.TRANSACTION_FETCH_FAILED,
-        { provider: provider as string, accountId },
+        { provider: provider as string, accountId, userId },
       )
     }
   }

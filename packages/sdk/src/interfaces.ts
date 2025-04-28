@@ -19,12 +19,13 @@ export interface DisconnectParams {
 }
 
 export interface GetAccountsParams {
-  userId?: string
+  userId: string
   [key: string]: unknown
 }
 
 export interface GetTransactionsParams {
   accountId: string
+  userId: string
   options?: TransactionHistoryOptions
   [key: string]: unknown
 }
@@ -34,21 +35,7 @@ export interface RefreshAccountsParams {
   [key: string]: unknown
 }
 
-export interface PulseAdapter<P extends Provider = Provider> {
-  readonly provider: P
-  connect(params: ConnectParams): Promise<void>
-  disconnect(params: DisconnectParams): Promise<void>
-  getAccounts(params: GetAccountsParams): Promise<Account[]>
-  getTransactions(params: GetTransactionsParams): Promise<Transaction[]>
-  refreshAccounts(params: RefreshAccountsParams): Promise<void>
-}
-
-export interface PulseOptions<P extends Provider> {
-  adapters: PulseAdapter<P>[]
-  defaultProvider?: P
-}
-
-export interface PulseAdapterConfig {
+export interface BasePulseAdapterConfig {
   clientId?: string
   clientSecret?: string
   apiKey?: string
@@ -58,14 +45,34 @@ export interface PulseAdapterConfig {
   [key: string]: unknown
 }
 
-// Base class for implementing adapters
-export abstract class BasePulseAdapter<P extends Provider = Provider>
-  implements PulseAdapter<P>
+// Generic interface for adapter-specific config
+export interface PulseAdapter<
+  P extends Provider = Provider,
+  C extends BasePulseAdapterConfig = BasePulseAdapterConfig,
+> {
+  readonly provider: P
+  readonly config: C // Add config as a readonly property to use the generic type
+  connect(params: ConnectParams): Promise<void>
+  disconnect(params: DisconnectParams): Promise<void>
+  getAccounts(params: GetAccountsParams): Promise<Account[]>
+  getTransactions(params: GetTransactionsParams): Promise<Transaction[]>
+  refreshAccounts(params: RefreshAccountsParams): Promise<void>
+}
+
+export interface PulseOptions<P extends Provider> {
+  adapters: PulseAdapter<P, any>[]
+  defaultProvider?: P
+}
+
+export abstract class BasePulseAdapter<
+  P extends Provider = Provider,
+  C extends BasePulseAdapterConfig = BasePulseAdapterConfig,
+> implements PulseAdapter<P, C>
 {
   abstract readonly provider: P
-  protected config: PulseAdapterConfig
+  readonly config: C
 
-  constructor(config: PulseAdapterConfig) {
+  constructor(config: C) {
     this.config = config
   }
 
@@ -93,6 +100,10 @@ export abstract class BasePulseAdapter<P extends Provider = Provider>
         { provider: this.provider, userId: params.userId },
       )
     }
+  }
+
+  protected getConfigValue<K extends keyof C>(key: K): C[K] {
+    return this.config[key]
   }
 }
 
