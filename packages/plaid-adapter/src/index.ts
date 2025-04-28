@@ -137,7 +137,7 @@ export class PlaidAdapter extends BasePulseAdapter<
    */
   async connect(params: ConnectParams): Promise<void> {
     try {
-      const { userId, onLinkTokenCreated } = params
+      const { userId, onConnectTokenCreated } = params
 
       // Create a link token for the user
       const response = await this.client.linkTokenCreate({
@@ -158,8 +158,8 @@ export class PlaidAdapter extends BasePulseAdapter<
       }
 
       // If a callback was provided, use it to pass the link token back
-      if (typeof onLinkTokenCreated === 'function') {
-        onLinkTokenCreated(data.link_token)
+      if (typeof onConnectTokenCreated === 'function') {
+        onConnectTokenCreated(data.link_token)
       } else {
         console.warn(
           `Link token created for user ${userId}, but no callback was provided to handle it.`,

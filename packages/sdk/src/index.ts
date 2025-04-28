@@ -188,18 +188,17 @@ export class Pulse<P extends Provider> {
   }
 
   /**
-   * Gets transactions for an account.
+   * Gets accounts for a user.
    *
-   * @param accountId - The account ID to get transactions for
    * @param userId - The user ID associated with the account
    * @param provider - Optional provider to get transactions from
-   * @param options - Optional transaction history options
-   * @returns A promise that resolves to an array of transactions
+   * @param additionalParams - Additional parameters for the request
+   * @returns A promise that resolves to an array of accounts
    * @throws {PulseError} If fetching transactions fails
    *
    * @example
    * ```typescript
-   * const transactions = await pulse.getTransactions('account-456', 'user-123', 'plaid')
+   * const accounts = await pulse.getAccounts('user-123', 'plaid')
    * ```
    */
   async getAccounts(
