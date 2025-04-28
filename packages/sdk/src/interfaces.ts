@@ -11,12 +11,10 @@ export type Provider = string
 export interface ConnectParams {
   userId: string
   onConnectTokenCreated?: (connectToken: string) => void
-  [key: string]: unknown
 }
 
 export interface DisconnectParams {
   userId?: string
-  [key: string]: unknown
 }
 
 export interface GetAccountsParams {

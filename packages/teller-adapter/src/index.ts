@@ -301,10 +301,7 @@ export class TellerAdapter extends BasePulseAdapter<
    */
   async getTransactions(params: GetTransactionsParams): Promise<Transaction[]> {
     try {
-      const { accountId, userId } = params as {
-        accountId: string
-        userId: string
-      }
+      const { accountId, userId } = params
 
       if (!userId) {
         throw new PulseError(
