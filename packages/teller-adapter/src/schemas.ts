@@ -58,7 +58,7 @@ export const TellerAccountSchema = z.object({
 })
 
 export const TellerConnectResponseSchema = z.object({
-  access_token: z.string(),
+  connect_token: z.string(),
 })
 
 export type TellerTransaction = z.infer<typeof TellerTransactionSchema>

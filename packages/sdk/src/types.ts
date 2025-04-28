@@ -64,6 +64,13 @@ export class PulseError extends Error {
   ) {
     super(message)
     this.name = 'PulseError'
+
+    Object.setPrototypeOf(this, new.target.prototype)
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, PulseError)
+    }
+
     this.code = code
     this.provider = metadata?.provider
     this.userId = metadata?.userId

@@ -65,6 +65,17 @@ export class TellerAdapter extends BasePulseAdapter<
   }
 
   /**
+   * Stores the access token received after successful authentication with Teller Connect.
+   *
+   * @param userId - The user ID associated with the token
+   * @param accessToken - The access token received from Teller Connect
+   * @returns A promise that resolves when the token is stored
+   */
+  async storeAccessToken(userId: string, accessToken: string): Promise<void> {
+    this.accessTokens[userId] = accessToken
+  }
+
+  /**
    * Connects a user to Teller.
    *
    * @param params - Connection parameters including userId
@@ -73,7 +84,7 @@ export class TellerAdapter extends BasePulseAdapter<
    */
   async connect(params: ConnectParams): Promise<void> {
     try {
-      const { userId } = params
+      const { userId, onConnectTokenCreated } = params
 
       // Create a Teller Connect token for the user
       const response = await fetch(`${this.apiUrl}/connect/token`, {
@@ -102,7 +113,27 @@ export class TellerAdapter extends BasePulseAdapter<
 
       const data = await response.json()
       const parsedData = TellerConnectResponseSchema.parse(data)
-      this.accessTokens[userId] = parsedData.access_token
+
+      // If a callback was provided, use it to pass the connect token back
+      if (
+        typeof onConnectTokenCreated === 'function' &&
+        parsedData.connect_token
+      ) {
+        onConnectTokenCreated(parsedData.connect_token)
+      } else if (parsedData.connect_token) {
+        console.warn(
+          `Connect token created for user ${userId}, but no callback was provided to handle it.`,
+        )
+        console.warn(
+          'The client needs this token to initialize Teller Connect.',
+        )
+      } else {
+        throw new PulseError(
+          'No connect token found in Teller response',
+          ErrorCode.PROVIDER_CONNECTION_FAILED,
+          { provider: 'teller', userId },
+        )
+      }
     } catch (error) {
       if (error instanceof PulseError) {
         throw error
@@ -195,7 +226,7 @@ export class TellerAdapter extends BasePulseAdapter<
    */
   async getAccounts(params: GetAccountsParams): Promise<Account[]> {
     try {
-      const { userId } = params as { userId: string }
+      const { userId } = params
 
       if (!userId) {
         throw new PulseError(
@@ -216,7 +247,7 @@ export class TellerAdapter extends BasePulseAdapter<
 
       const response = await fetch(`${this.apiUrl}/accounts`, {
         headers: {
-          Authorization: `Basic ${btoa(`${accessToken}:`)}`,
+          Authorization: `Basic ${Buffer.from(`${accessToken}:`).toString('base64')}`,
           'Content-Type': 'application/json',
         },
       })
@@ -296,7 +327,7 @@ export class TellerAdapter extends BasePulseAdapter<
         `${this.apiUrl}/accounts/${accountId}/transactions`,
         {
           headers: {
-            Authorization: `Basic ${btoa(`${accessToken}:`)}`,
+            Authorization: `Basic ${Buffer.from(`${accessToken}:`).toString('base64')}`,
             'Content-Type': 'application/json',
           },
         },

@@ -10,6 +10,7 @@ export type Provider = string
 
 export interface ConnectParams {
   userId: string
+  onConnectTokenCreated?: (connectToken: string) => void
   [key: string]: unknown
 }
 
@@ -45,18 +46,19 @@ export interface BasePulseAdapterConfig {
   [key: string]: unknown
 }
 
-// Generic interface for adapter-specific config
 export interface PulseAdapter<
   P extends Provider = Provider,
   C extends BasePulseAdapterConfig = BasePulseAdapterConfig,
 > {
   readonly provider: P
-  readonly config: C // Add config as a readonly property to use the generic type
+  readonly config: C
   connect(params: ConnectParams): Promise<void>
   disconnect(params: DisconnectParams): Promise<void>
   getAccounts(params: GetAccountsParams): Promise<Account[]>
   getTransactions(params: GetTransactionsParams): Promise<Transaction[]>
   refreshAccounts(params: RefreshAccountsParams): Promise<void>
+  exchangePublicToken?(userId: string, publicToken: string): Promise<void>
+  storeAccessToken?(userId: string, accessToken: string): Promise<void>
 }
 
 export interface PulseOptions<P extends Provider> {
@@ -85,8 +87,8 @@ export abstract class BasePulseAdapter<
 
   async refreshAccounts(params: RefreshAccountsParams): Promise<void> {
     try {
-      await this.disconnect({ userId: params.userId })
-      await this.connect({ userId: params.userId })
+      await this.disconnect(params)
+      await this.connect(params)
     } catch (error) {
       if (error instanceof PulseError) {
         throw error

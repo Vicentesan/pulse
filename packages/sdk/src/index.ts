@@ -248,21 +248,27 @@ export class Pulse<P extends Provider> {
    * Gets transactions for an account.
    *
    * @param accountId - The account ID to get transactions for
+   * @param userId - The user ID associated with the account
    * @param provider - Optional provider to get transactions from
    * @param options - Optional transaction history options
    * @returns A promise that resolves to an array of transactions
    * @throws {PulseError} If fetching transactions fails
+   *
+   * @example
+   * ```typescript
+   * const transactions = await pulse.getTransactions('account-456', 'user-123', 'plaid')
+   * ```
    */
   async getTransactions(
     accountId: string,
-    userId: string, // Added userId parameter
+    userId: string,
     provider?: P,
     options?: TransactionHistoryOptions,
   ): Promise<Transaction[]> {
     try {
       const transactionParams: GetTransactionsParams = {
         accountId,
-        userId, // Include userId in params
+        userId,
         options,
       }
 
@@ -353,6 +359,100 @@ export class Pulse<P extends Provider> {
       throw new PulseError(
         `Failed to refresh accounts: ${errorMessage}`,
         ErrorCode.ACCOUNT_REFRESH_FAILED,
+        { provider: provider as string, userId },
+      )
+    }
+  }
+
+  /**
+   * Exchanges a public token for an access token.
+   * This is used by providers that require a client-side authentication flow.
+   *
+   * @param userId - The user ID associated with the token
+   * @param publicToken - The public token to exchange
+   * @param provider - The provider to exchange the token with
+   * @returns A promise that resolves when the exchange is complete
+   * @throws {PulseError} If the exchange fails
+   *
+   * @example
+   * ```typescript
+   * await pulse.exchangePublicToken('user-123', 'public-token-from-client', 'teller')
+   * ```
+   */
+  async exchangePublicToken(
+    userId: string,
+    publicToken: string,
+    provider: P,
+  ): Promise<void> {
+    try {
+      const adapter = this.getAdapter({ provider })
+
+      if (!adapter.exchangePublicToken) {
+        throw new PulseError(
+          `Provider ${provider} does not support token exchange`,
+          ErrorCode.PROVIDER_CONNECTION_FAILED,
+          { provider: provider as string, userId },
+        )
+      }
+
+      await adapter.exchangePublicToken(userId, publicToken)
+    } catch (error) {
+      if (error instanceof PulseError) {
+        throw error
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new PulseError(
+        `Failed to exchange public token: ${errorMessage}`,
+        ErrorCode.PROVIDER_CONNECTION_FAILED,
+        { provider: provider as string, userId },
+      )
+    }
+  }
+
+  /**
+   * Stores an access token for a provider.
+   * This is used by providers like Teller that provide the access token directly after authentication.
+   *
+   * @param userId - The user ID associated with the token
+   * @param accessToken - The access token to store
+   * @param provider - The provider to store the token for
+   * @returns A promise that resolves when the token is stored
+   * @throws {PulseError} If storing the token fails
+   *
+   * @example
+   * ```typescript
+   * await pulse.storeAccessToken('user-123', 'access-token-from-teller-connect', 'teller')
+   * ```
+   */
+  async storeAccessToken(
+    userId: string,
+    accessToken: string,
+    provider: P,
+  ): Promise<void> {
+    try {
+      const adapter = this.getAdapter({ provider })
+
+      if (!adapter.storeAccessToken) {
+        throw new PulseError(
+          `Provider ${provider} does not support storing access tokens directly`,
+          ErrorCode.PROVIDER_CONNECTION_FAILED,
+          { provider: provider as string, userId },
+        )
+      }
+
+      await adapter.storeAccessToken(userId, accessToken)
+    } catch (error) {
+      if (error instanceof PulseError) {
+        throw error
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new PulseError(
+        `Failed to store access token: ${errorMessage}`,
+        ErrorCode.PROVIDER_CONNECTION_FAILED,
         { provider: provider as string, userId },
       )
     }

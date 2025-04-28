@@ -51,7 +51,6 @@ export class PlaidAdapter extends BasePulseAdapter<
 
   constructor(config: PlaidAdapterConfig) {
     super(config)
-    super(config)
 
     // Use the config through the public property
     if (!this.config.apiKey) {
@@ -88,6 +87,48 @@ export class PlaidAdapter extends BasePulseAdapter<
   }
 
   /**
+   * Exchanges a public token for an access token after user authentication.
+   *
+   * @param userId - The user ID associated with the token
+   * @param publicToken - The public token received from Plaid Link
+   * @returns A promise that resolves when the exchange is complete
+   * @throws {PulseError} If the token exchange fails
+   */
+  async exchangePublicToken(
+    userId: string,
+    publicToken: string,
+  ): Promise<void> {
+    try {
+      const response = await this.client.itemPublicTokenExchange({
+        public_token: publicToken,
+      })
+
+      if (!response.data.access_token) {
+        throw new PulseError(
+          'No access token received from Plaid',
+          ErrorCode.PROVIDER_CONNECTION_FAILED,
+          { provider: 'plaid', userId },
+        )
+      }
+
+      // Store the access token for future API calls
+      this.accessTokens[userId] = response.data.access_token
+    } catch (error) {
+      if (error instanceof PulseError) {
+        throw error
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new PulseError(
+        `Failed to exchange public token: ${errorMessage}`,
+        ErrorCode.PROVIDER_CONNECTION_FAILED,
+        { provider: 'plaid', userId },
+      )
+    }
+  }
+
+  /**
    * Connects a user to Plaid.
    *
    * @param params - Connection parameters including userId
@@ -96,7 +137,7 @@ export class PlaidAdapter extends BasePulseAdapter<
    */
   async connect(params: ConnectParams): Promise<void> {
     try {
-      const { userId } = params
+      const { userId, onLinkTokenCreated } = params
 
       // Create a link token for the user
       const response = await this.client.linkTokenCreate({
@@ -116,8 +157,17 @@ export class PlaidAdapter extends BasePulseAdapter<
         )
       }
 
-      // Store the link token for this user
-      this.accessTokens[userId] = data.link_token
+      // If a callback was provided, use it to pass the link token back
+      if (typeof onLinkTokenCreated === 'function') {
+        onLinkTokenCreated(data.link_token)
+      } else {
+        console.warn(
+          `Link token created for user ${userId}, but no callback was provided to handle it.`,
+        )
+        console.warn(
+          'The client needs this token to complete the authentication flow.',
+        )
+      }
     } catch (error) {
       if (error instanceof PulseError) {
         throw error
