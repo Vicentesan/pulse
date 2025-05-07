@@ -51,17 +51,18 @@ export class TellerAdapter extends BasePulseAdapter<
    */
   constructor(config: TellerAdapterConfig) {
     super(config)
-    if (!config.apiKey) {
+    if (!this.config.apiKey) {
       throw new PulseError(
         'Teller API key is required',
         ErrorCode.CONFIGURATION_ERROR,
         { provider: 'teller' },
       )
     }
-    if (config.webhookUrl) this.webhookUrl = config.webhookUrl
-    if (config.environment) this.environment = config.environment
-    if (config.clientSecret) this.clientSecret = config.clientSecret
-    if (config.timeout) this.timeout = config.timeout
+
+    if (this.config.webhookUrl) this.webhookUrl = this.config.webhookUrl
+    if (this.config.environment) this.environment = this.config.environment
+    if (this.config.clientSecret) this.clientSecret = this.config.clientSecret
+    if (this.config.timeout) this.timeout = this.config.timeout
   }
 
   /**
