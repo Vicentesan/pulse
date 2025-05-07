@@ -4,6 +4,7 @@ export enum AccountType {
   CREDIT = 'CREDIT',
   INVESTMENT = 'INVESTMENT',
   LOAN = 'LOAN',
+  CRYPTO = 'CRYPTO',
   OTHER = 'OTHER',
 }
 
@@ -19,6 +20,7 @@ export interface Account {
   balance: number
   currency: string
   lastUpdated: string
+  metadata?: Record<string, unknown>
 }
 
 export interface Transaction {
@@ -30,4 +32,55 @@ export interface Transaction {
   category?: string
   type: TransactionType
   date: string
+  metadata?: Record<string, unknown>
+}
+
+export enum ErrorCode {
+  PROVIDER_NOT_FOUND = 'PROVIDER_NOT_FOUND',
+  PROVIDER_CONNECTION_FAILED = 'PROVIDER_CONNECTION_FAILED',
+  PROVIDER_DISCONNECTION_FAILED = 'PROVIDER_DISCONNECTION_FAILED',
+  ACCOUNT_FETCH_FAILED = 'ACCOUNT_FETCH_FAILED',
+  TRANSACTION_FETCH_FAILED = 'TRANSACTION_FETCH_FAILED',
+  ACCOUNT_REFRESH_FAILED = 'ACCOUNT_REFRESH_FAILED',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
+export class PulseError extends Error {
+  code: ErrorCode
+  provider?: string
+  userId?: string
+  accountId?: string
+
+  constructor(
+    message: string,
+    code: ErrorCode,
+    metadata?: {
+      provider?: string
+      userId?: string
+      accountId?: string
+    },
+  ) {
+    super(message)
+    this.name = 'PulseError'
+
+    Object.setPrototypeOf(this, new.target.prototype)
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, PulseError)
+    }
+
+    this.code = code
+    this.provider = metadata?.provider
+    this.userId = metadata?.userId
+    this.accountId = metadata?.accountId
+  }
+}
+
+export interface TransactionHistoryOptions {
+  limit?: number
+  offset?: number
+  startDate?: Date
+  endDate?: Date
 }
