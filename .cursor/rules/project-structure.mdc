@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Structure Guide
+
+This project is a monorepo containing multiple packages under the [packages](mdc:packages) directory:
+
+- [teller-adapter](mdc:packages/teller-adapter): Adapter for Teller integration.
+- [plaid-adapter](mdc:packages/plaid-adapter): Adapter for Plaid integration.
+- [sdk](mdc:packages/sdk): Shared SDK utilities and types.
+
+Each package contains its own `src` directory for source code, a `dist` directory for build outputs, and local configuration files such as `package.json`, `tsconfig.json`, and `tsup.config.ts`.
+
+The root directory contains monorepo-level configuration files such as [package.json](mdc:package.json), [tsconfig.json](mdc:tsconfig.json), and [turbo.json](mdc:turbo.json).

@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# SDK Package
+
+The [sdk](mdc:packages/sdk) package provides shared utilities and types for use across adapters. Its structure includes:
+
+- [src](mdc:packages/sdk/src): Source code for SDK utilities and types.
+- [dist](mdc:packages/sdk/dist): Build output.
+- [package.json](mdc:packages/sdk/package.json): Package configuration and dependencies.
+- [tsconfig.json](mdc:packages/sdk/tsconfig.json): TypeScript configuration.
+- [tsup.config.ts](mdc:packages/sdk/tsup.config.ts): Build configuration for tsup.

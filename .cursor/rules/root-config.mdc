@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Root Configuration Files
+
+The root directory contains configuration files that apply to the entire monorepo:
+
+- [package.json](mdc:package.json): Defines root-level dependencies, scripts, and workspace settings.
+- [tsconfig.json](mdc:tsconfig.json): TypeScript configuration shared across all packages.
+- [turbo.json](mdc:turbo.json): Configuration for Turborepo, managing build and development tasks for the monorepo.

@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Teller Adapter Package
+
+The [teller-adapter](mdc:packages/teller-adapter) package provides integration with the Teller API. Its structure includes:
+
+- [src](mdc:packages/teller-adapter/src): Source code for the adapter.
+- [dist](mdc:packages/teller-adapter/dist): Build output.
+- [package.json](mdc:packages/teller-adapter/package.json): Package configuration and dependencies.
+- [tsconfig.json](mdc:packages/teller-adapter/tsconfig.json): TypeScript configuration.
+- [tsup.config.ts](mdc:packages/teller-adapter/tsup.config.ts): Build configuration for tsup.
