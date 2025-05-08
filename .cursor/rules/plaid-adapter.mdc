@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Plaid Adapter Package
+
+The [plaid-adapter](mdc:packages/plaid-adapter) package provides integration with the Plaid API. Its structure includes:
+
+- [src](mdc:packages/plaid-adapter/src): Source code for the adapter.
+- [dist](mdc:packages/plaid-adapter/dist): Build output.
+- [package.json](mdc:packages/plaid-adapter/package.json): Package configuration and dependencies.
+- [tsconfig.json](mdc:packages/plaid-adapter/tsconfig.json): TypeScript configuration.
+- [tsup.config.ts](mdc:packages/plaid-adapter/tsup.config.ts): Build configuration for tsup.
