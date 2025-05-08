@@ -31,11 +31,17 @@ import {
  *     })
  *   ]
  * })
+ *
+ * // Access provider-specific methods directly
+ * const ethBalance = await pulse.crypto.getEthereumBalance('0x742d35Cc6634C0532925a3b844Bc454e4438f44e')
  * ```
  */
 export class Pulse<P extends Provider> {
   private adapters: Map<P, PulseAdapter<P>>
-  private defaultProvider?: P
+  private defaultProvider?: P;
+
+  // Dynamic property access for provider-specific methods
+  [key: string]: unknown
 
   /**
    * Creates a new Pulse instance.
@@ -53,6 +59,10 @@ export class Pulse<P extends Provider> {
     this.adapters = new Map()
     options.adapters.forEach((adapter) => {
       this.adapters.set(adapter.provider, adapter)
+
+      // Create direct access to the adapter via its provider name
+      // This allows: pulse.crypto.someMethod() syntax
+      this[adapter.provider as string] = adapter
     })
 
     this.defaultProvider = options.defaultProvider
@@ -121,15 +131,27 @@ export class Pulse<P extends Provider> {
       }
 
       if (provider) {
-        await this.getAdapter({ provider }).connect(connectParams)
+        const adapter = this.getAdapter({ provider })
+        if (!adapter.connect) {
+          throw new PulseError(
+            `Provider ${provider} does not support connect method`,
+            ErrorCode.METHOD_NOT_SUPPORTED,
+            { provider: provider as string, method: 'connect' },
+          )
+        }
+        await adapter.connect(connectParams)
         return
       }
 
-      await Promise.all(
-        Array.from(this.adapters.values()).map((adapter) =>
-          adapter.connect(connectParams),
-        ),
-      )
+      const connectPromises = Array.from(this.adapters.values())
+        .filter((adapter) => typeof adapter.connect === 'function')
+        .map((adapter) =>
+          adapter.connect!(connectParams).catch((error) => {
+            console.error(`Error connecting to ${adapter.provider}:`, error)
+          }),
+        )
+
+      await Promise.all(connectPromises)
     } catch (error) {
       if (error instanceof PulseError) {
         throw error
@@ -163,15 +185,30 @@ export class Pulse<P extends Provider> {
       const disconnectParams: DisconnectParams = { userId }
 
       if (provider) {
-        await this.getAdapter({ provider }).disconnect(disconnectParams)
+        const adapter = this.getAdapter({ provider })
+        if (!adapter.disconnect) {
+          throw new PulseError(
+            `Provider ${provider} does not support disconnect method`,
+            ErrorCode.METHOD_NOT_SUPPORTED,
+            { provider: provider as string, method: 'disconnect' },
+          )
+        }
+        await adapter.disconnect(disconnectParams)
         return
       }
 
-      await Promise.all(
-        Array.from(this.adapters.values()).map((adapter) =>
-          adapter.disconnect(disconnectParams),
-        ),
-      )
+      const disconnectPromises = Array.from(this.adapters.values())
+        .filter((adapter) => typeof adapter.disconnect === 'function')
+        .map((adapter) =>
+          adapter.disconnect!(disconnectParams).catch((error) => {
+            console.error(
+              `Error disconnecting from ${adapter.provider}:`,
+              error,
+            )
+          }),
+        )
+
+      await Promise.all(disconnectPromises)
     } catch (error) {
       if (error instanceof PulseError) {
         throw error
@@ -191,10 +228,10 @@ export class Pulse<P extends Provider> {
    * Gets accounts for a user.
    *
    * @param userId - The user ID associated with the account
-   * @param provider - Optional provider to get transactions from
+   * @param provider - Optional provider to get accounts from
    * @param additionalParams - Additional parameters for the request
    * @returns A promise that resolves to an array of accounts
-   * @throws {PulseError} If fetching transactions fails
+   * @throws {PulseError} If fetching accounts fails
    *
    * @example
    * ```typescript
@@ -213,19 +250,28 @@ export class Pulse<P extends Provider> {
       }
 
       if (provider) {
-        return await this.getAdapter({ provider }).getAccounts(accountParams)
+        const adapter = this.getAdapter({ provider })
+        if (!adapter.getAccounts) {
+          throw new PulseError(
+            `Provider ${provider} does not support getAccounts method`,
+            ErrorCode.METHOD_NOT_SUPPORTED,
+            { provider: provider as string, method: 'getAccounts' },
+          )
+        }
+        return await adapter.getAccounts(accountParams)
       }
 
-      const accountPromises = Array.from(this.adapters.values()).map(
-        (adapter) =>
-          adapter.getAccounts(accountParams).catch((error) => {
+      const accountPromises = Array.from(this.adapters.values())
+        .filter((adapter) => typeof adapter.getAccounts === 'function')
+        .map((adapter) =>
+          adapter.getAccounts!(accountParams).catch((error) => {
             console.error(
               `Error fetching accounts from ${adapter.provider}:`,
               error,
             )
             return [] as Account[]
           }),
-      )
+        )
 
       const accounts = await Promise.all(accountPromises)
       return accounts.flat()
@@ -273,22 +319,40 @@ export class Pulse<P extends Provider> {
       }
 
       if (provider) {
-        return await this.getAdapter({ provider }).getTransactions(
-          transactionParams,
-        )
+        const adapter = this.getAdapter({ provider })
+        if (!adapter.getTransactions) {
+          throw new PulseError(
+            `Provider ${provider} does not support getTransactions method`,
+            ErrorCode.METHOD_NOT_SUPPORTED,
+            { provider: provider as string, method: 'getTransactions' },
+          )
+        }
+        return await adapter.getTransactions(transactionParams)
       }
 
-      // Try each adapter until one succeeds
+      // Try each adapter that implements getTransactions
       const errors: Error[] = []
       for (const adapter of this.adapters.values()) {
-        try {
-          return await adapter.getTransactions(transactionParams)
-        } catch (error) {
-          errors.push(error instanceof Error ? error : new Error(String(error)))
+        if (typeof adapter.getTransactions === 'function') {
+          try {
+            return await adapter.getTransactions(transactionParams)
+          } catch (error) {
+            errors.push(
+              error instanceof Error ? error : new Error(String(error)),
+            )
+          }
         }
       }
 
-      // If we get here, all adapters failed
+      // If we get here, all adapters failed or none implemented getTransactions
+      if (errors.length === 0) {
+        throw new PulseError(
+          'No providers implement getTransactions method',
+          ErrorCode.METHOD_NOT_SUPPORTED,
+          { method: 'getTransactions' },
+        )
+      }
+
       throw new PulseError(
         `All providers failed to fetch transactions: ${errors.map((e) => e.message).join('; ')}`,
         ErrorCode.TRANSACTION_FETCH_FAILED,
@@ -335,20 +399,30 @@ export class Pulse<P extends Provider> {
       }
 
       if (provider) {
-        await this.getAdapter({ provider }).refreshAccounts(refreshParams)
+        const adapter = this.getAdapter({ provider })
+        if (!adapter.refreshAccounts) {
+          throw new PulseError(
+            `Provider ${provider} does not support refreshAccounts method`,
+            ErrorCode.METHOD_NOT_SUPPORTED,
+            { provider: provider as string, method: 'refreshAccounts' },
+          )
+        }
+        await adapter.refreshAccounts(refreshParams)
         return
       }
 
-      await Promise.all(
-        Array.from(this.adapters.values()).map((adapter) =>
-          adapter.refreshAccounts(refreshParams).catch((error) => {
+      const refreshPromises = Array.from(this.adapters.values())
+        .filter((adapter) => typeof adapter.refreshAccounts === 'function')
+        .map((adapter) =>
+          adapter.refreshAccounts!(refreshParams).catch((error) => {
             console.error(
               `Error refreshing accounts from ${adapter.provider}:`,
               error,
             )
           }),
-        ),
-      )
+        )
+
+      await Promise.all(refreshPromises)
     } catch (error) {
       if (error instanceof PulseError) {
         throw error
@@ -390,8 +464,8 @@ export class Pulse<P extends Provider> {
       if (!adapter.exchangePublicToken) {
         throw new PulseError(
           `Provider ${provider} does not support token exchange`,
-          ErrorCode.PROVIDER_CONNECTION_FAILED,
-          { provider: provider as string, userId },
+          ErrorCode.METHOD_NOT_SUPPORTED,
+          { provider: provider as string, method: 'exchangePublicToken' },
         )
       }
 
@@ -437,8 +511,8 @@ export class Pulse<P extends Provider> {
       if (!adapter.storeAccessToken) {
         throw new PulseError(
           `Provider ${provider} does not support storing access tokens directly`,
-          ErrorCode.PROVIDER_CONNECTION_FAILED,
-          { provider: provider as string, userId },
+          ErrorCode.METHOD_NOT_SUPPORTED,
+          { provider: provider as string, method: 'storeAccessToken' },
         )
       }
 
